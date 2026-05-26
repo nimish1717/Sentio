@@ -14,7 +14,7 @@ export default function WatchTogether() {
     const [expectedCount, setExpectedCount] = useState(2);
     const [text, setText] = useState("");
     const [cards, setCards] = useState([]);
-    const [context, setContext] = useState({ company: "group", time: "any", mode: "lean" });
+    const context = { company: "group", time: "any", mode: "lean" };
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     

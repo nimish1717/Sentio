@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import EmotionRadar from "../components/EmotionRadar";
 import RecommendCard from "../components/RecommendCard";
@@ -16,7 +16,7 @@ export default function Results() {
     const [filter, setFilter] = useState("all");   // content type filter
     const [mode, setMode] = useState("lean");   // lean | contrast
 
-    const fetchRecs = async (currentMode) => {
+    const fetchRecs = useCallback(async (currentMode) => {
         setLoading(true);
         setError("");
         try {
@@ -27,7 +27,7 @@ export default function Results() {
             const res = await recommendAPI.get(reqSessionId || reqRoomId, {
                 ...(filter !== "all" && { type: filter }),
                 mode: currentMode,
-                ...(isRoom && { roomId: reqRoomId }), // If it's a room, we explicitly pass roomId in filters which `api.js` appends
+                ...(isRoom && { roomId: reqRoomId }),
             });
             setData(res.data);
         } catch (err) {
@@ -35,9 +35,9 @@ export default function Results() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [sessionId, filter]);
 
-    useEffect(() => { fetchRecs(mode); }, [sessionId, filter]);
+    useEffect(() => { fetchRecs(mode); }, [fetchRecs, mode]);
 
     const handleModeToggle = (newMode) => {
         setMode(newMode);
