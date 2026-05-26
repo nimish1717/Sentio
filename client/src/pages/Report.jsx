@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { reportAPI } from "../utils/api";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import "./Report.css";
 
@@ -22,10 +22,7 @@ export default function Report() {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const token = localStorage.getItem("sentio_token");
-                const res = await axios.get("http://localhost:5000/api/report", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await reportAPI.get();
                 setReportData(res.data);
             } catch (err) {
                 console.error("Error fetching report:", err);

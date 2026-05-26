@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import { profileAPI } from "../utils/api";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts";
 import "./Profile.css";
 
@@ -18,7 +17,6 @@ const generateHeatmapDates = () => {
 };
 
 export default function Profile() {
-    const { user: authUser } = useAuth();
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -26,10 +24,7 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const token = localStorage.getItem("sentio_token");
-                const res = await axios.get("http://localhost:5000/api/profile", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await profileAPI.get();
                 setProfileData(res.data);
             } catch (err) {
                 console.error("Error fetching profile:", err);

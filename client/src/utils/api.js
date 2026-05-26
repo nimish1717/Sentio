@@ -99,4 +99,14 @@ export const shareAPI = {
     getSharedSession: (token) => api.get(`/share/${token}`),
 };
 
+// ─── Profile ──────────────────────────────
+export const profileAPI = {
+    get: () => api.get("/profile"),
+};
+
+// ─── Report ───────────────────────────────
+export const reportAPI = {
+    get: () => api.get("/report"),
+};
+
 export default api;
