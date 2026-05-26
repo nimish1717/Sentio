@@ -1,0 +1,319 @@
+/* Profile Page Specific Styles */
+.profile-page {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Section 1 — Identity Card */
+.profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--teal));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    box-shadow: var(--shadow);
+}
+
+.identity-info h1 {
+    margin: 0 0 0.2rem 0;
+    font-size: 1.8rem;
+}
+
+.personality-type {
+    font-size: 1.1rem;
+    color: var(--purple-dark);
+    font-weight: 500;
+    font-style: italic;
+    margin-bottom: 0.2rem;
+}
+
+.member-since {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Section 2 — Stats Row */
+.stats-row {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem; /* for scrollbar */
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 120px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Grid Layout for Sections 3, 4, 5 */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.emotion-card {
+    grid-column: 1 / -1; /* spans full width */
+}
+
+@media (min-width: 1024px) {
+    .emotion-card {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+    }
+    .badges-card {
+        grid-column: 2 / 3;
+        grid-row: 1 / 2;
+    }
+    .taste-card {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+    }
+}
+
+.emotion-card h3, .badges-card h3, .taste-card h3, .heatmap-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.radar-container {
+    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Pills */
+.emotion-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.pill {
+    padding: 0.4rem 0.8rem;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.pill-primary {
+    background: var(--purple-light);
+    color: var(--purple-dark);
+}
+
+.pill-secondary {
+    background: var(--coral-light);
+    color: #712B13;
+}
+
+.pill-teal {
+    background: var(--teal-light);
+    color: #085041;
+}
+
+.top-emotions, .used-cards, .taste-preferences {
+    margin-top: 1.5rem;
+}
+
+/* Badges Shelf */
+.badges-shelf {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.badge-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    text-align: center;
+}
+
+.badge-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    margin-bottom: 0.5rem;
+    transition: all 0.3s;
+}
+
+.badge-item.earned .badge-icon {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border-color: #FFA500;
+    box-shadow: 0 4px 10px rgba(255, 165, 0, 0.3);
+}
+
+.badge-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.badge-item.locked .badge-name {
+    color: var(--text-muted);
+}
+
+.badge-condition {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+    opacity: 0.8;
+}
+
+/* Taste Profile */
+.top-content {
+    margin-top: 1.5rem;
+}
+
+.content-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.content-mini-card {
+    background: var(--bg);
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.content-type {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--white);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+/* Activity Heatmap */
+.heatmap-container {
+    margin-top: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+/* 7 rows x 12 columns grid */
+.heatmap-grid {
+    display: grid;
+    /* Grid is technically flow column to map dates correctly but simple grid works for row major layout too */
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    grid-auto-flow: column; /* Fill vertically first (days of week) */
+    gap: 4px;
+    width: fit-content;
+}
+
+.heatmap-cell {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background-color: #ebedf0; /* Default empty color */
+    border: 1px solid rgba(27, 31, 35, 0.06);
+}
+
+/* Color scales for heatmap (GitHub style but using our purple brand color) */
+.intensity-0 { background-color: #ebedf0; }
+.intensity-1 { background-color: #c0bbf2; }
+.intensity-2 { background-color: #928beb; }
+.intensity-3 { background-color: #635ae4; }
+.intensity-4 { background-color: #3b32c6; }
+
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 1rem;
+    justify-content: flex-end;
+}
+
+.text-sm {
+    font-size: 0.8rem;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.quick-actions button {
+    flex: 1 1 200px;
+}

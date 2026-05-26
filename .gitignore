@@ -1,0 +1,76 @@
+# ============================================================
+# Sentio Fullstack Project - Global .gitignore
+# ============================================================
+sentio_explanation.md
+# ─── OS / Environment ───────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# ─── Node.js / React (Client & Server) ──────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+/client/build/
+/client/dist/
+/server/dist/
+
+# Testing
+/client/coverage/
+/server/coverage/
+
+# Next.js / framework specific (if applicable)
+.next/
+out/
+.nuxt/
+
+# ─── Python / ML ────────────────────────────────────────────
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env_ml/
+.venv/
+env.bak/
+venv.bak/
+
+# ML specific
+*.joblib
+*.pkl
+*.model
+
+# ─── Environment Variables / Secrets ────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+credentials.json
+
+# ─── IDE / Editor ───────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.eslintcache
+
+# ─── Misc ───────────────────────────────────────────────────
+logs/
+*.log
+tmp/
+temp/
