@@ -1,17 +1,16 @@
 # Sentio — ML service dependencies
-# Install with: pip install -r requirements.txt
 
 # Core ML
 scikit-learn==1.4.0
 numpy==1.26.4
 pandas==2.2.0
+scipy==1.12.0
+joblib==1.3.2
 
-# HuggingFace datasets (for GoEmotions auto-download)
+# HuggingFace datasets
 datasets==2.18.0
 
-# Flask (for serving the model later)
+# Flask API
 flask==3.0.2
 flask-cors==4.0.0
-
-# Utilities
-pickle5==0.0.12
+gunicorn==21.2.0
