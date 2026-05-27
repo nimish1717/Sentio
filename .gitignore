@@ -49,7 +49,7 @@ venv.bak/
 
 # ML specific
 *.joblib
-*.pkl
+# *.pkl  — committed for deployment (models are small ~2MB)
 *.model
 
 # ─── Environment Variables / Secrets ────────────────────────
