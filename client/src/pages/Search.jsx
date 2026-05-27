@@ -9,6 +9,8 @@ export default function Search() {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);   // null | "waking" | "failed"
+    const [retrying, setRetrying] = useState(false);
     const [filter, setFilter] = useState("All");
     const [recentSearches, setRecentSearches] = useState([]);
     const debouncedQuery = useDebounce(query, 500);
@@ -30,23 +32,40 @@ export default function Search() {
             return;
         }
 
-        const fetchResults = async () => {
+        const fetchResults = async (isRetry = false) => {
             setLoading(true);
+            if (!isRetry) setError(null);
             try {
                 const res = await searchAPI.search(debouncedQuery, filter);
                 setResults(res.data.results || []);
-                
+                setError(null);
+                setRetrying(false);
+
                 // Save to recent searches (if successful and not already first)
                 setRecentSearches(prev => {
                     const q = debouncedQuery.trim();
                     const filtered = prev.filter(item => item.toLowerCase() !== q.toLowerCase());
-                    const newRecent = [q, ...filtered].slice(0, 5); // Keep top 5
+                    const newRecent = [q, ...filtered].slice(0, 5);
                     localStorage.setItem("sentio_recent_searches", JSON.stringify(newRecent));
                     return newRecent;
                 });
-                
-            } catch (error) {
-                console.error("Search failed:", error);
+
+            } catch (err) {
+                console.error("Search failed:", err);
+                const status = err?.response?.status;
+                if (status === 503 || !status) {
+                    // ML service cold-starting — auto-retry once after 8 seconds
+                    setError("waking");
+                    if (!isRetry) {
+                        setRetrying(true);
+                        setTimeout(() => fetchResults(true), 8000);
+                    } else {
+                        setRetrying(false);
+                    }
+                } else {
+                    setError("failed");
+                    setRetrying(false);
+                }
             } finally {
                 setLoading(false);
             }
@@ -157,13 +176,61 @@ export default function Search() {
                 )}
             </div>
 
+            {/* Error / Waking-up Banner */}
+            {error === "waking" && query.trim() !== "" && (
+                <div style={{
+                    background: "linear-gradient(135deg, #FFF7E6, #FFF0CC)",
+                    border: "1px solid #FFC76D",
+                    borderRadius: "12px",
+                    padding: "1.2rem 1.5rem",
+                    marginBottom: "1.5rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    textAlign: "left"
+                }}>
+                    <span style={{ fontSize: "1.6rem" }}>☕</span>
+                    <div>
+                        <strong style={{ color: "#8A5700" }}>Our AI is waking up…</strong>
+                        <p style={{ margin: "0.2rem 0 0", fontSize: "0.9rem", color: "#996300" }}>
+                            {retrying
+                                ? "Retrying automatically in a moment, hang tight!"
+                                : "It took too long this time. Try searching again."}
+                        </p>
+                    </div>
+                    {retrying && (
+                        <div className="spinner" style={{ width: 18, height: 18, borderWidth: 2, marginLeft: "auto", flexShrink: 0 }} />
+                    )}
+                </div>
+            )}
+
+            {error === "failed" && query.trim() !== "" && (
+                <div style={{
+                    background: "#FFF0F0",
+                    border: "1px solid #FFB3B3",
+                    borderRadius: "12px",
+                    padding: "1rem 1.5rem",
+                    marginBottom: "1.5rem",
+                    color: "#8B0000",
+                    fontSize: "0.9rem"
+                }}>
+                    ⚠️ Something went wrong. Please try again.
+                </div>
+            )}
+
             {/* Results Grid */}
             {query.trim() !== "" && (
                 <div>
                     <h3 style={{ marginBottom: "1.5rem", color: "#444" }}>
-                        {loading ? "Finding matches..." : results.length > 0 ? "Top Matches" : "No matches found"}
+                        {loading
+                            ? "Finding matches…"
+                            : error
+                            ? ""
+                            : results.length > 0
+                            ? "Top Matches"
+                            : "No matches found"}
                     </h3>
-                    
+
                     <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
                         {results.map((content) => (
                             <RecommendCard key={content.id} item={content} />

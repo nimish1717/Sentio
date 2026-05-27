@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const rateLimit = require("express-rate-limit");
+const axios = require("axios");
 
 dotenv.config();
 
@@ -16,7 +17,16 @@ const app = express();
 // MIDDLEWARE
 // ─────────────────────────────────────────────
 
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000" }));
+app.use(cors({
+    origin: function(origin, callback) {
+        if (!origin || origin.includes('localhost') || origin.includes('vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(null, process.env.CLIENT_URL || true);
+        }
+    },
+    credentials: true
+}));
 app.use(express.json({ limit: "10kb" })); // block huge payloads
 
 // Rate limiting — 100 requests per 15 min per IP
@@ -66,9 +76,25 @@ mongoose
     .then(() => {
         console.log("✅ MongoDB connected");
         const PORT = process.env.PORT || 5000;
-        app.listen(PORT, () =>
-            console.log(`🚀 Server running on http://localhost:${PORT}`)
-        );
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on http://localhost:${PORT}`);
+
+            // ── Keep ML service alive on Render free tier ──────────────
+            // Render free tier spins down services after 15 min of inactivity.
+            // Ping the ML /health endpoint every 14 min to prevent cold starts.
+            const ML_URL = process.env.ML_SERVICE_URL;
+            if (ML_URL && !ML_URL.includes("localhost")) {
+                console.log(`🔁 Keep-alive ping scheduled for ML service: ${ML_URL}`);
+                setInterval(async () => {
+                    try {
+                        await axios.get(`${ML_URL}/health`, { timeout: 10000 });
+                        console.log("🏓 ML service keep-alive ping OK");
+                    } catch (e) {
+                        console.warn("⚠️  ML service keep-alive ping failed:", e.message);
+                    }
+                }, 14 * 60 * 1000); // every 14 minutes
+            }
+        });
     })
     .catch((err) => {
         console.error("❌ MongoDB connection failed:", err.message);

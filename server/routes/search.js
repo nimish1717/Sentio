@@ -19,7 +19,7 @@ router.get("/", auth, async (req, res) => {
             text: query,
             cards: [],
             context: { company: "alone", time: "any", mode: "lean" } // Default context for searching
-        });
+        }, { timeout: 15000 });
 
         const fingerprint = mlResponse.data.fingerprint;
 
@@ -56,7 +56,7 @@ router.get("/", auth, async (req, res) => {
             fingerprint,
             content: contentItems,
             top_n: 10
-        });
+        }, { timeout: 15000 });
 
         const matches = matchResponse.data.matches || [];
 
@@ -95,6 +95,9 @@ router.get("/", auth, async (req, res) => {
         console.error("Search error:", err.message);
         if (err.code === "ECONNREFUSED") {
             return res.status(503).json({ error: "ML service unavailable. Is Flask running?" });
+        }
+        if (err.code === "ETIMEDOUT" || err.code === "ECONNABORTED") {
+            return res.status(503).json({ error: "ML service timed out — it may be waking up. Please try again in a moment." });
         }
         res.status(500).json({ error: err.message });
     }
