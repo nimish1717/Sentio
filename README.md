@@ -12,7 +12,7 @@ Instead of just recording how you feel, Sentio acts on it. It curates highly per
 
 Sentio is fully deployed and accessible online.
 
-**🔗 [Access Sentio Here](https://sentio-app.vercel.app/)**
+**🔗 [Access Sentio Here](https://sentio-gules.vercel.app/)**
 
 ---
 
