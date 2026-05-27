@@ -2,16 +2,23 @@
 // Sentio — Node/Express Server Entry Point
 // ============================================================
 
+const http = require("http");
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const rateLimit = require("express-rate-limit");
 const axios = require("axios");
+const cron = require("node-cron");
 
 dotenv.config();
 
 const app = express();
+const httpServer = http.createServer(app);
+
+// ── Socket.io initialisation ─────────────────────────────────
+const { initSocket } = require("./socket");
+initSocket(httpServer);
 
 // ─────────────────────────────────────────────
 // MIDDLEWARE
@@ -53,6 +60,7 @@ app.use("/api/notifications", require("./routes/notifications"));
 app.use("/api/share", require("./routes/share"));
 app.use("/api/profile", require("./routes/profile"));
 app.use("/api/report", require("./routes/report"));
+app.use("/api/admin", require("./routes/admin"));
 
 // Health check
 app.get("/health", (req, res) => {
@@ -76,7 +84,7 @@ mongoose
     .then(() => {
         console.log("✅ MongoDB connected");
         const PORT = process.env.PORT || 5000;
-        app.listen(PORT, () => {
+        httpServer.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
 
             // ── Keep ML service alive on Render free tier ──────────────
@@ -94,6 +102,15 @@ mongoose
                     }
                 }, 14 * 60 * 1000); // every 14 minutes
             }
+
+            // ── Weekly cron insights — every Sunday at 9 AM ─────────────
+            const { runWeeklyInsights } = require("./utils/weeklyInsights");
+            cron.schedule("0 9 * * 0", async () => {
+                console.log("📊 Running weekly insights cron...");
+                await runWeeklyInsights();
+                console.log("📊 Weekly insights cron complete.");
+            });
+            console.log("⏰ Weekly insights cron scheduled (Sundays 9AM)");
         });
     })
     .catch((err) => {

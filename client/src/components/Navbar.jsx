@@ -50,6 +50,11 @@ export default function Navbar() {
                         <Link to="/together" style={{ textDecoration: "none", color: "#666", fontSize: "0.9rem", ...isActive("/together") }}>
                             Watch Together
                         </Link>
+                        {user.isAdmin && (
+                            <Link to="/admin" style={{ textDecoration: "none", fontSize: "0.9rem", fontWeight: 600, color: "#7F77DD", ...isActive("/admin") }}>
+                                ⚙️ Admin
+                            </Link>
+                        )}
                     </>
                 )}
             </div>

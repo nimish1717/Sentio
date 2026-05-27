@@ -12,12 +12,22 @@ import WatchTogether from "./pages/WatchTogether";
 import Search from "./pages/Search";
 import Profile from "./pages/Profile";
 import Report from "./pages/Report";
+import Admin from "./pages/Admin";
 
 // Protect routes that need login
 function PrivateRoute({ children }) {
     const { user, loading } = useAuth();
     if (loading) return <div className="loading-screen">Loading...</div>;
     return user ? children : <Navigate to="/auth" />;
+}
+
+// Protect admin-only routes
+function AdminRoute({ children }) {
+    const { user, loading } = useAuth();
+    if (loading) return <div className="loading-screen">Loading...</div>;
+    if (!user) return <Navigate to="/auth" />;
+    // isAdmin is checked server-side; show page and let API return 403 if needed
+    return children;
 }
 
 export default function App() {
@@ -37,6 +47,7 @@ export default function App() {
                         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
                         <Route path="/report" element={<PrivateRoute><Report /></PrivateRoute>} />
                         <Route path="/together" element={<WatchTogether />} />
+                        <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                     </Routes>
                 </BrowserRouter>
             </AuthProvider>

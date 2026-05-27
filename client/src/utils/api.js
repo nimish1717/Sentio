@@ -109,4 +109,14 @@ export const reportAPI = {
     get: () => api.get("/report"),
 };
 
+// ─── Admin ────────────────────────────────
+export const adminAPI = {
+    getStats: () => api.get("/admin/stats"),
+    triggerCron: () => api.post("/admin/trigger-cron"),
+};
+
+// ─── Socket base URL (without /api) ───────
+export const SOCKET_URL = (process.env.REACT_APP_API_URL || "http://localhost:5000/api")
+    .replace(/\/api$/, "");
+
 export default api;

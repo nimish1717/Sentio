@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema(
         longestStreak: { type: Number, default: 0 },
         badges: [{ type: String }],
         lastSessionDate: { type: Date },
+
+        // Admin flag — set manually in MongoDB Atlas
+        isAdmin: { type: Boolean, default: false },
     },
     { timestamps: true }
 );
@@ -199,7 +202,7 @@ const notificationSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["streak-risk", "saved-unwatched", "weekly-pattern", "milestone"],
+            enum: ["streak-risk", "saved-unwatched", "weekly-pattern", "milestone", "weekly-insight"],
             required: true,
         },
         message: { type: String, required: true },

@@ -50,7 +50,8 @@ router.post("/register", async (req, res) => {
                 email: user.email,
                 currentStreak: user.currentStreak,
                 badges: user.badges,
-                lastSessionDate: user.lastSessionDate
+                lastSessionDate: user.lastSessionDate,
+                isAdmin: user.isAdmin || false,
             },
         });
     } catch (err) {
@@ -91,7 +92,8 @@ router.post("/login", async (req, res) => {
                 email: user.email,
                 currentStreak: user.currentStreak,
                 badges: user.badges,
-                lastSessionDate: user.lastSessionDate
+                lastSessionDate: user.lastSessionDate,
+                isAdmin: user.isAdmin || false,
             },
         });
     } catch (err) {

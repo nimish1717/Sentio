@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { io as socketIO } from "socket.io-client";
 import EmotionCard from "../components/EmotionCard";
-import { roomAPI, moodAPI } from "../utils/api";
+import { roomAPI, moodAPI, SOCKET_URL } from "../utils/api";
 import { useDialog } from "../context/DialogContext";
 
 const CARDS = ["nostalgic", "hyped", "empty", "anxious", "cozy", "inspired", "heartbroken", "bored", "angry", "curious", "lonely", "content"];
@@ -24,6 +25,7 @@ export default function WatchTogether() {
     const [myUserId, setMyUserId] = useState(null);
 
     const pollRef = useRef(null);
+    const socketRef = useRef(null);
     const navigate = useNavigate();
     const { showAlert, showConfirm } = useDialog();
 
@@ -46,21 +48,33 @@ export default function WatchTogether() {
         }
     };
 
-    // Poll room status every 3 seconds while waiting
+    // Real-time room updates via Socket.io
+    // Replaces the old 3-second polling setInterval
     useEffect(() => {
         if (view === "waiting" && room?.code) {
-            pollRef.current = setInterval(async () => {
-                try {
-                    const res = await roomAPI.get(room.code);
-                    setRoom(res.data.room);
-                    if (res.data.room.status === "complete") {
-                        clearInterval(pollRef.current);
-                        setView("done");
-                    }
-                } catch (e) { }
-            }, 3000);
+            // Connect socket and join the room channel
+            const socket = socketIO(SOCKET_URL, { transports: ["websocket", "polling"] });
+            socketRef.current = socket;
+
+            socket.on("connect", () => {
+                socket.emit("join-room", room.code);
+            });
+
+            socket.on("room-updated", ({ room: updatedRoom }) => {
+                setRoom(updatedRoom);
+            });
+
+            socket.on("room-complete", ({ room: updatedRoom }) => {
+                setRoom(updatedRoom);
+                setView("done");
+            });
+
+            return () => {
+                socket.emit("leave-room", room.code);
+                socket.disconnect();
+                socketRef.current = null;
+            };
         }
-        return () => clearInterval(pollRef.current);
     }, [view, room?.code]);
 
     const handleCreate = async () => {
@@ -324,7 +338,7 @@ export default function WatchTogether() {
                 </button>
             )}
             
-            <p className="muted" style={{ marginTop: "1.5rem", fontSize: "0.85rem" }}>Checking every 3 seconds...</p>
+            <p className="muted" style={{ marginTop: "1.5rem", fontSize: "0.85rem" }}>Connected live ⚡ updates instantly when someone joins.</p>
         </div>
     );
 

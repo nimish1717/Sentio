@@ -85,12 +85,70 @@ router.get("/", auth, async (req, res) => {
             fingerprint: currentFp,
             content: contentItems,
             top_n: 15
-        });
+        }, { timeout: 15000 });
 
         const matches = mlResponse.data.matches || [];
 
-        // 5. Build full recommendation objects
-        const recommendations = matches.map(match => {
+        // ─────────────────────────────────────────────
+        // 5. FEEDBACK LOOP RE-RANKING
+        // Use the user's past ratings to boost/penalize
+        // content with similar emotional fingerprints.
+        // ─────────────────────────────────────────────
+        const EMOTIONS = ["joy", "sadness", "anger", "fear", "surprise", "nostalgia", "curiosity", "calm"];
+
+        const pastRatings = await Rating.find({ userId: req.userId }).populate("contentId");
+
+        // Build average fingerprint for liked and disliked content
+        const likedFp    = Object.fromEntries(EMOTIONS.map(e => [e, 0]));
+        const dislikedFp = Object.fromEntries(EMOTIONS.map(e => [e, 0]));
+        let likedCount = 0, dislikedCount = 0;
+
+        for (const r of pastRatings) {
+            if (!r.contentId?.emotionFingerprint) continue;
+            const efp = r.contentId.emotionFingerprint;
+            if (r.rating === 1) {
+                EMOTIONS.forEach(e => { likedFp[e] += efp[e] || 0; });
+                likedCount++;
+            } else if (r.rating === -1) {
+                EMOTIONS.forEach(e => { dislikedFp[e] += efp[e] || 0; });
+                dislikedCount++;
+            }
+        }
+
+        if (likedCount > 0)    EMOTIONS.forEach(e => { likedFp[e]    /= likedCount; });
+        if (dislikedCount > 0) EMOTIONS.forEach(e => { dislikedFp[e] /= dislikedCount; });
+
+        // Cosine similarity helper
+        const cosineSim = (a, b) => {
+            const dot   = EMOTIONS.reduce((s, e) => s + (a[e] || 0) * (b[e] || 0), 0);
+            const normA = Math.sqrt(EMOTIONS.reduce((s, e) => s + (a[e] || 0) ** 2, 0));
+            const normB = Math.sqrt(EMOTIONS.reduce((s, e) => s + (b[e] || 0) ** 2, 0));
+            if (normA === 0 || normB === 0) return 0;
+            return dot / (normA * normB);
+        };
+
+        // Re-rank: apply preference multiplier clamped to [0.5, 1.5]
+        const hasPreferenceData = likedCount > 0 || dislikedCount > 0;
+        const reranked = matches.map(match => {
+            const content = contents.find(c => c._id.toString() === match.id);
+            const efp = content?.emotionFingerprint;
+            let finalScore = match.score;
+
+            if (hasPreferenceData && efp) {
+                const simToLiked    = likedCount    > 0 ? cosineSim(efp, likedFp)    : 0;
+                const simToDisliked = dislikedCount > 0 ? cosineSim(efp, dislikedFp) : 0;
+                const boost = 1 + (0.3 * simToLiked) - (0.2 * simToDisliked);
+                finalScore = match.score * Math.min(1.5, Math.max(0.5, boost));
+            }
+
+            return { ...match, baseScore: match.score, finalScore };
+        });
+
+        // Sort by finalScore descending
+        reranked.sort((a, b) => b.finalScore - a.finalScore);
+
+        // 6. Build full recommendation objects
+        const recommendations = reranked.map(match => {
             const content = contents.find(c => c._id.toString() === match.id);
             return {
                 id: content._id,
@@ -101,11 +159,13 @@ router.get("/", auth, async (req, res) => {
                 imageUrl: content.imageUrl,
                 language: content.language,
                 durationMins: content.durationMins,
-                matchScore: match.score,
+                matchScore: parseFloat(match.finalScore.toFixed(4)),
+                // Include feedback context so frontend can show "personalised" badge
+                personalisedByFeedback: hasPreferenceData,
             };
         });
 
-        // 6. Optionally update session history (only for lean mode and no type filter)
+        // 7. Optionally update session history (only for lean mode and no type filter)
         if (session && mode === "lean" && (!type || type === "all")) {
             session.recommendationIds = recommendations.map(r => r.id);
             await session.save();
@@ -113,13 +173,17 @@ router.get("/", auth, async (req, res) => {
 
         res.json({
             fingerprint: currentFp,
-            recommendations
+            recommendations,
+            personalisedByFeedback: hasPreferenceData,
         });
 
     } catch (err) {
         console.error("Recommend error:", err.message);
         if (err.code === "ECONNREFUSED") {
             return res.status(503).json({ error: "ML service unavailable. Is Flask running?" });
+        }
+        if (err.code === "ETIMEDOUT" || err.code === "ECONNABORTED") {
+            return res.status(503).json({ error: "ML service timed out — try again in a moment." });
         }
         res.status(500).json({ error: err.message });
     }

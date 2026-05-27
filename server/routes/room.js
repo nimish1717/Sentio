@@ -2,6 +2,7 @@ const router = require("express").Router();
 const axios = require("axios");
 const { Room } = require("../models");
 const auth = require("../middleware/auth");
+const { getIo } = require("../socket");
 const ML_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
 
 function generateCode() {
@@ -31,10 +32,10 @@ router.post("/create", auth, async (req, res) => {
         while ((await Room.findOne({ code })) && attempts < 10);
 
         const room = await Room.create({
-            code, 
-            hostName: hostName || "Host", 
+            code,
+            hostName: hostName || "Host",
             hostId: req.userId,
-            expectedCount: expectedCount || 2, 
+            expectedCount: expectedCount || 2,
             members: [],
         });
         res.status(201).json({ room });
@@ -53,25 +54,38 @@ router.post("/:code/join", auth, async (req, res) => {
 
         // Prevent duplicate joins
         if (room.members.some(m => m.userId && m.userId.toString() === req.userId)) {
-            // Already joined, just return the room
             return res.json({ room });
         }
 
-        room.members.push({ 
-            name: name || "Guest", 
-            fingerprint, 
-            submittedAt: new Date(), 
-            userId: req.userId 
+        room.members.push({
+            name: name || "Guest",
+            fingerprint,
+            submittedAt: new Date(),
+            userId: req.userId
         });
 
         if (room.members.length >= room.expectedCount) {
             const mlRes = await axios.post(`${ML_URL}/group-fingerprint`, {
                 fingerprints: room.members.map(m => m.fingerprint),
-            });
+            }, { timeout: 15000 });
             room.groupFingerprint = mlRes.data.group_fingerprint;
             room.status = "complete";
         }
+
         await room.save();
+
+        // ── Emit real-time update to all sockets in this room channel ──
+        try {
+            const io = getIo();
+            if (room.status === "complete") {
+                io.to(room.code).emit("room-complete", { room });
+            } else {
+                io.to(room.code).emit("room-updated", { room });
+            }
+        } catch (e) {
+            // Socket.io not yet ready (e.g. local dev) — safe to ignore
+        }
+
         res.json({ room });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -83,7 +97,7 @@ router.post("/:code/complete", auth, async (req, res) => {
     try {
         const room = await Room.findOne({ code: req.params.code.toUpperCase() });
         if (!room) return res.status(404).json({ error: "Room not found" });
-        
+
         if (room.hostId && room.hostId.toString() !== req.userId) {
             return res.status(403).json({ error: "Only the host can end this room" });
         }
@@ -98,12 +112,18 @@ router.post("/:code/complete", auth, async (req, res) => {
 
         const mlRes = await axios.post(`${ML_URL}/group-fingerprint`, {
             fingerprints: room.members.map(m => m.fingerprint),
-        });
-        
+        }, { timeout: 15000 });
+
         room.groupFingerprint = mlRes.data.group_fingerprint;
         room.status = "complete";
         await room.save();
-        
+
+        // ── Emit completion event to all waiting clients ──
+        try {
+            const io = getIo();
+            io.to(room.code).emit("room-complete", { room });
+        } catch (e) {}
+
         res.json({ room });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -114,12 +134,11 @@ router.delete("/:code", auth, async (req, res) => {
     try {
         const room = await Room.findOne({ code: req.params.code.toUpperCase() });
         if (!room) return res.status(404).json({ error: "Room not found" });
-        
-        // Ensure user is host
+
         if (room.hostId && room.hostId.toString() !== req.userId) {
             return res.status(403).json({ error: "Only the host can delete this room" });
         }
-        
+
         await Room.deleteOne({ _id: room._id });
         res.json({ message: "Room deleted successfully" });
     } catch (err) {
