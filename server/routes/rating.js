@@ -21,4 +21,14 @@ router.post("/", auth, async (req, res) => {
     }
 });
 
+// Reset all ratings (taste preference reset)
+router.delete("/", auth, async (req, res) => {
+    try {
+        const result = await Rating.deleteMany({ userId: req.userId });
+        res.json({ deleted: result.deletedCount, message: "Taste preferences reset successfully" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

@@ -31,9 +31,11 @@ async function checkDailyNotifications(userId) {
         // 1. STREAK RISK
         // If streak > 0, time is past 8 PM, and no session today
         if (user.currentStreak > 0 && todayDate.getHours() >= 20) {
+            const startOfToday = new Date(todayDate);
+            startOfToday.setHours(0, 0, 0, 0);
             const hasSessionToday = await MoodSession.findOne({
                 userId,
-                createdAt: { $gte: new Date(todayDate.setHours(0, 0, 0, 0)) }
+                createdAt: { $gte: startOfToday }
             });
 
             if (!hasSessionToday) {

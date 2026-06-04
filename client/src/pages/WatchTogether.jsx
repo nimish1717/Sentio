@@ -24,7 +24,6 @@ export default function WatchTogether() {
     const [historyRooms, setHistoryRooms] = useState([]);
     const [myUserId, setMyUserId] = useState(null);
 
-    const pollRef = useRef(null);
     const socketRef = useRef(null);
     const navigate = useNavigate();
     const { showAlert, showConfirm } = useDialog();
@@ -87,10 +86,11 @@ export default function WatchTogether() {
         finally { setLoading(false); }
     };
 
-    const handleJoinRoom = async () => {
+    const handleJoinRoom = async (codeOverride) => {
+        const roomCode = (codeOverride || code).toUpperCase();
         setLoading(true); setError("");
         try {
-            const res = await roomAPI.get(code.toUpperCase());
+            const res = await roomAPI.get(roomCode);
             setRoom(res.data.room);
             setView("join");
         } catch (e) { setError("Room not found"); }
@@ -175,7 +175,7 @@ export default function WatchTogether() {
                                     </div>
                                 </div>
                                 <div style={{ display: "flex", gap: "0.5rem" }}>
-                                    <button className="btn btn-outline" onClick={() => { setCode(r.code); handleJoinRoom(); }} style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}>
+                                    <button className="btn btn-outline" onClick={() => handleJoinRoom(r.code)} style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}>
                                         Rejoin
                                     </button>
                                     {r.hostId === myUserId && (

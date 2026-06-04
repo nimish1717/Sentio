@@ -25,8 +25,8 @@ export function AuthProvider({ children }) {
         return res.data;
     };
 
-    const register = async (name, email, password) => {
-        const res = await authAPI.register({ name, email, password });
+    const register = async (name, email, password, verifiedToken) => {
+        const res = await authAPI.register({ name, email, password, verifiedToken });
         localStorage.setItem("sentio_token", res.data.token);
         setUser(res.data.user);
         return res.data;

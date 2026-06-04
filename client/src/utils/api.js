@@ -33,6 +33,8 @@ export const authAPI = {
     register: (data) => api.post("/auth/register", data),
     login: (data) => api.post("/auth/login", data),
     me: () => api.get("/auth/me"),
+    sendOtp: (email) => api.post("/auth/send-otp", { email }),
+    verifyOtp: (email, otp) => api.post("/auth/verify-otp", { email, otp }),
 };
 
 // ─── Mood ─────────────────────────────────────
@@ -64,6 +66,7 @@ export const recommendAPI = {
 // ─── Rating ───────────────────────────────────
 export const ratingAPI = {
     rate: (data) => api.post("/rating", data),
+    resetPreferences: () => api.delete("/rating"),
 };
 
 // ─── Room (Group mood) ────────────────────────
@@ -102,12 +105,14 @@ export const shareAPI = {
 // ─── Profile ──────────────────────────────
 export const profileAPI = {
     get: () => api.get("/profile"),
+    updateName: (name) => api.put("/profile", { name }),
 };
 
 // ─── Report ───────────────────────────────
 export const reportAPI = {
     get: () => api.get("/report"),
 };
+
 
 // ─── Admin ────────────────────────────────
 export const adminAPI = {

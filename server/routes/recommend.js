@@ -6,7 +6,7 @@
 const router = require("express").Router();
 const axios = require("axios");
 const auth = require("../middleware/auth");
-const { MoodSession, Content, Room } = require("../models");
+const { MoodSession, Content, Room, Rating } = require("../models");
 
 const ML_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
 
@@ -55,6 +55,12 @@ router.get("/", auth, async (req, res) => {
             Object.keys(currentFp).forEach(key => {
                 currentFp[key] = parseFloat((1.0 - currentFp[key]).toFixed(4));
             });
+        } else if (mode === "lift") {
+            // Boost positive emotions, suppress negative ones
+            const POSITIVE = ["joy", "calm", "curiosity", "surprise"];
+            const NEGATIVE = ["sadness", "anger", "fear"];
+            POSITIVE.forEach(k => { currentFp[k] = parseFloat(Math.min(1, (currentFp[k] + 0.3)).toFixed(4)); });
+            NEGATIVE.forEach(k => { currentFp[k] = parseFloat(Math.max(0, (currentFp[k] - 0.3)).toFixed(4)); });
         }
 
         // 3. Fetch content candidates

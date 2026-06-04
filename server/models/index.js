@@ -150,6 +150,9 @@ const roomSchema = new mongoose.Schema(
         // How many members host expects
         expectedCount: { type: Number, default: 2 },
 
+        // Host display name
+        hostName: { type: String, default: "Host" },
+
         // Final group fingerprint (set when all members submit)
         groupFingerprint: fingerprintSchema,
 
@@ -207,7 +210,7 @@ const notificationSchema = new mongoose.Schema(
         },
         message: { type: String, required: true },
         read: { type: Boolean, default: false },
-        
+
         // Context identifier to prevent duplicate notifications
         // e.g., the contentId for saved-unwatched, or date string for streak-risk
         metadata: { type: String },
@@ -232,6 +235,22 @@ const shareTokenSchema = new mongoose.Schema(
 // Auto-delete expired tokens
 shareTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
+// ─── 9. OtpToken ─────────────────────────────────────────────
+// Short-lived OTP for email verification during registration
+const otpTokenSchema = new mongoose.Schema(
+    {
+        email: { type: String, required: true, lowercase: true },
+        otp: { type: String, required: true },
+        expiresAt: { type: Date, default: () => new Date(Date.now() + 10 * 60 * 1000) }, // 10 min
+    },
+    { timestamps: true }
+);
+
+// Auto-delete expired OTPs
+otpTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+// One OTP per email at a time
+otpTokenSchema.index({ email: 1 });
+
 // ─────────────────────────────────────────────
 // EXPORT
 // ─────────────────────────────────────────────
@@ -245,4 +264,5 @@ module.exports = {
     Watchlist: mongoose.model("Watchlist", watchlistSchema),
     Notification: mongoose.model("Notification", notificationSchema),
     ShareToken: mongoose.model("ShareToken", shareTokenSchema),
+    OtpToken: mongoose.model("OtpToken", otpTokenSchema),
 };

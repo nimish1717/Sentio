@@ -24,18 +24,18 @@ async function updateGamification(userId, newSession) {
 
     // Check if the streak is active (latest session is today or yesterday)
     if (uniqueDays[0] !== todayStr && uniqueDays[0] !== yesterdayStr) {
-        currentStreak = 1; // It's just today if we just saved one but the logic is weird. Wait, newSession is ALREADY in `sessions` because it was saved before this function is called.
-        // So uniqueDays[0] is exactly todayStr.
-    }
-    
-    // Walk backwards counting consecutive days
-    let expectedDate = new Date(uniqueDays[0]);
-    for (const dayStr of uniqueDays) {
-        if (dayStr === getDateString(expectedDate)) {
-            currentStreak++;
-            expectedDate.setDate(expectedDate.getDate() - 1);
-        } else {
-            break;
+        // Streak is broken — latest day is older than yesterday
+        currentStreak = 0;
+    } else {
+        // Walk backwards counting consecutive days
+        let expectedDate = new Date(uniqueDays[0]);
+        for (const dayStr of uniqueDays) {
+            if (dayStr === getDateString(expectedDate)) {
+                currentStreak++;
+                expectedDate.setDate(expectedDate.getDate() - 1);
+            } else {
+                break;
+            }
         }
     }
 

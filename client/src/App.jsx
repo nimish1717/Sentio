@@ -13,6 +13,7 @@ import Search from "./pages/Search";
 import Profile from "./pages/Profile";
 import Report from "./pages/Report";
 import Admin from "./pages/Admin";
+import SharedSession from "./pages/SharedSession";
 
 // Protect routes that need login
 function PrivateRoute({ children }) {
@@ -47,6 +48,7 @@ export default function App() {
                         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
                         <Route path="/report" element={<PrivateRoute><Report /></PrivateRoute>} />
                         <Route path="/together" element={<WatchTogether />} />
+                        <Route path="/share/:token" element={<SharedSession />} />
                         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                     </Routes>
                 </BrowserRouter>

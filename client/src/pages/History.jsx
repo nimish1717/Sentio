@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import EmotionRadar from "../components/EmotionRadar";
-import { moodAPI, roomAPI } from "../utils/api";
+import { moodAPI, roomAPI, shareAPI } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { useDialog } from "../context/DialogContext";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
@@ -58,12 +58,24 @@ export default function History() {
         showConfirm("Are you sure you want to delete this mood session?", "Delete Session", async () => {
             try {
                 await moodAPI.remove(id);
-                fetchAllData(); // Refetch everything to update charts and patterns in real-time
+                fetchAllData();
             } catch (err) {
                 console.error("Failed to delete session", err);
                 showAlert("Failed to delete session", "Error");
             }
         });
+    };
+
+    const handleShare = async (e, sessionId) => {
+        e.stopPropagation();
+        try {
+            const res = await shareAPI.generateLink(sessionId);
+            const shareUrl = `${window.location.origin}/share/${res.data.token}`;
+            await navigator.clipboard.writeText(shareUrl);
+            showAlert(`Share link copied to clipboard!\n\n${shareUrl}`, "Link Copied 🔗");
+        } catch (err) {
+            showAlert("Failed to generate share link. Try again.", "Error");
+        }
     };
 
     if (loading) return <div className="loading-screen"><div className="spinner" /></div>;
@@ -294,19 +306,33 @@ export default function History() {
                                             <span style={{ color: "#aaa", fontSize: "0.85rem" }}>{isOpen ? "▲" : "▼"}</span>
                                         </button>
                                         
-                                        {/* Delete Button */}
-                                        <button 
-                                            onClick={(e) => handleDelete(e, session._id)}
-                                            style={{
-                                                background: "none", border: "none", padding: "1rem 1.25rem", cursor: "pointer",
-                                                color: "#E24B4A", fontSize: "1.1rem", opacity: 0.7, transition: "opacity 0.2s"
-                                            }}
-                                            onMouseOver={(e) => e.target.style.opacity = 1}
-                                            onMouseOut={(e) => e.target.style.opacity = 0.7}
-                                            title="Delete Session"
-                                        >
-                                            🗑
-                                        </button>
+                                        {/* Share + Delete Buttons */}
+                                        <div style={{ display: "flex" }}>
+                                            <button 
+                                                onClick={(e) => handleShare(e, session._id)}
+                                                style={{
+                                                    background: "none", border: "none", padding: "1rem 0.75rem", cursor: "pointer",
+                                                    color: "#7F77DD", fontSize: "1rem", opacity: 0.7, transition: "opacity 0.2s"
+                                                }}
+                                                onMouseOver={(e) => e.target.style.opacity = 1}
+                                                onMouseOut={(e) => e.target.style.opacity = 0.7}
+                                                title="Share Session"
+                                            >
+                                                🔗
+                                            </button>
+                                            <button 
+                                                onClick={(e) => handleDelete(e, session._id)}
+                                                style={{
+                                                    background: "none", border: "none", padding: "1rem 0.75rem", cursor: "pointer",
+                                                    color: "#E24B4A", fontSize: "1.1rem", opacity: 0.7, transition: "opacity 0.2s"
+                                                }}
+                                                onMouseOver={(e) => e.target.style.opacity = 1}
+                                                onMouseOut={(e) => e.target.style.opacity = 0.7}
+                                                title="Delete Session"
+                                            >
+                                                🗑
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Expanded detail */}
@@ -314,7 +340,7 @@ export default function History() {
                                         <div style={{ padding: "0 1.25rem 1.25rem", borderTop: "1px solid #f0f0f0" }}>
                                             {session.freeText && (
                                                 <p style={{ fontSize: "0.875rem", color: "#555", fontStyle: "italic", margin: "1rem 0 0.75rem", lineHeight: 1.6 }}>
-                                                    "{session.freeText}"
+                                                    &ldquo;{session.freeText}&rdquo;
                                                 </p>
                                             )}
                                             <EmotionRadar fingerprint={session.emotionFingerprint} size={220} />

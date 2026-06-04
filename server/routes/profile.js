@@ -154,4 +154,20 @@ router.get("/", auth, async (req, res) => {
     }
 });
 
+// ─── Update profile name ─────────────────────
+router.put("/", auth, async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name || !name.trim()) return res.status(400).json({ error: "Name required" });
+        const user = await User.findByIdAndUpdate(
+            req.userId,
+            { name: name.trim() },
+            { new: true, select: "-passwordHash" }
+        );
+        res.json({ user });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to update profile" });
+    }
+});
+
 module.exports = router;

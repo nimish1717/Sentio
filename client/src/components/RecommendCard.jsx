@@ -122,7 +122,7 @@ export default function RecommendCard({ item, sessionId }) {
                     <span style={{ fontSize: "0.78rem", color: "#888" }}>{item.durationMins} min</span>
                 )}
                 <span style={{ fontSize: "0.78rem", color: "#aaa", marginLeft: "auto" }}>
-                    {Math.round(item.matchScore * 100)}% match
+                    {item.matchScore != null ? `${Math.round(item.matchScore * 100)}% match` : ""}
                 </span>
             </div>
 

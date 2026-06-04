@@ -24,7 +24,7 @@ export default function MoodCapture() {
         setCards(prev => prev.includes(card) ? prev.filter(c => c !== card) : [...prev, card]);
 
     const canNext = () => {
-        if (step === 0) return text.trim().length >= 5 || cards.length > 0;
+        if (step === 0) return text.trim().length >= 5;
         if (step === 1) return cards.length > 0;
         return true;
     };

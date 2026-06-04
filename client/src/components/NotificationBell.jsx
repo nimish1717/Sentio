@@ -5,7 +5,8 @@ const TYPE_ICONS = {
     "streak-risk": "🔥",
     "saved-unwatched": "📌",
     "weekly-pattern": "🧠",
-    "milestone": "🏆"
+    "milestone": "🏆",
+    "weekly-insight": "📊",
 };
 
 function formatTimeAgo(dateString) {

@@ -6,12 +6,6 @@ import {
     PieChart, Pie, Cell, Legend
 } from "recharts";
 
-const EMOTION_COLORS = {
-    joy: "#F9C74F", sadness: "#577590", anger: "#F94144",
-    fear: "#9B5DE5", surprise: "#F8961E", nostalgia: "#90BE6D",
-    curiosity: "#43AA8B", calm: "#4D908E"
-};
-
 const TYPE_COLORS = ["#7F77DD", "#43AA8B", "#F9C74F", "#F94144", "#F8961E"];
 
 const StatCard = ({ label, value, emoji }) => (
