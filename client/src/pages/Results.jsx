@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import EmotionRadar from "../components/EmotionRadar";
 import RecommendCard from "../components/RecommendCard";
 import { recommendAPI } from "../utils/api";
+import SpotifyButton from "../components/SpotifyButton";
 
 const TYPE_ORDER = ["movie", "series", "book", "podcast", "music"];
 
@@ -73,6 +74,17 @@ export default function Results() {
                         This is how your mood looks right now across 8 dimensions.
                     </p>
                     <EmotionRadar fingerprint={data.fingerprint} size={280} />
+
+                    {/* Spotify Playlist Generator */}
+                    <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid #f0f0f0" }}>
+                        <p style={{ fontSize: "0.82rem", color: "#888", marginBottom: "0.6rem" }}>
+                            🎵 Turn this mood into a Spotify playlist
+                        </p>
+                        <SpotifyButton
+                            sessionId={sessionId.startsWith("room-") ? undefined : sessionId}
+                            fingerprint={data.fingerprint}
+                        />
+                    </div>
                 </div>
             )}
 

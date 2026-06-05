@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema(
 
         // Admin flag — set manually in MongoDB Atlas
         isAdmin: { type: Boolean, default: false },
+
+        // Spotify OAuth
+        spotifyAccessToken:  { type: String },
+        spotifyRefreshToken: { type: String },
+        spotifyTokenExpiry:  { type: Date },
+        spotifyUserId:       { type: String },
     },
     { timestamps: true }
 );

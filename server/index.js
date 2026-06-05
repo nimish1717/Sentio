@@ -61,6 +61,8 @@ app.use("/api/share", require("./routes/share"));
 app.use("/api/profile", require("./routes/profile"));
 app.use("/api/report", require("./routes/report"));
 app.use("/api/admin", require("./routes/admin"));
+app.use("/api/spotify", require("./routes/spotify"));
+
 
 // Health check
 app.get("/health", (req, res) => {
