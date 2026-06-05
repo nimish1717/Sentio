@@ -14,7 +14,6 @@ import Profile from "./pages/Profile";
 import Report from "./pages/Report";
 import Admin from "./pages/Admin";
 import SharedSession from "./pages/SharedSession";
-import SpotifyCallback from "./pages/SpotifyCallback";
 
 // Protect routes that need login
 function PrivateRoute({ children }) {
@@ -50,7 +49,6 @@ export default function App() {
                         <Route path="/report" element={<PrivateRoute><Report /></PrivateRoute>} />
                         <Route path="/together" element={<WatchTogether />} />
                         <Route path="/share/:token" element={<SharedSession />} />
-                        <Route path="/spotify/callback" element={<SpotifyCallback />} />
                         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                     </Routes>
                 </BrowserRouter>

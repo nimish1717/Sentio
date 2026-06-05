@@ -120,21 +120,6 @@ export const adminAPI = {
     triggerCron: () => api.post("/admin/trigger-cron"),
 };
 
-// ─── Spotify ──────────────────────────────
-export const spotifyAPI = {
-    status: () => api.get("/spotify/status"),
-    generatePlaylist: (data) => api.post("/spotify/generate-playlist", data),
-    disconnect: () => api.delete("/spotify/disconnect"),
-    exchangeCode: (code) => api.post("/spotify/exchange-code", { code }),
-    // Browser redirect — token passed as query param since headers can't be set
-    getAuthUrl: (token) => {
-        const base = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-        return `${base}/spotify/auth?_token=${token}`;
-    },
-};
-
-
-
 
 // ─── Socket base URL (without /api) ───────
 export const SOCKET_URL = (process.env.REACT_APP_API_URL || "http://localhost:5000/api")
