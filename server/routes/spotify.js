@@ -83,8 +83,13 @@ router.post("/exchange-code", auth, async (req, res) => {
 
         res.json({ connected: true, spotifyUserId: profileRes.data.id });
     } catch (err) {
-        console.error("Spotify exchange-code error:", err.response?.data || err.message);
-        res.status(500).json({ error: "Failed to exchange code with Spotify" });
+        const spotifyError = err.response?.data;
+        console.error("Spotify exchange-code error:", JSON.stringify(spotifyError || err.message));
+        console.error("Redirect URI used:", process.env.SPOTIFY_REDIRECT_URI);
+        res.status(500).json({
+            error: "Failed to exchange code with Spotify",
+            detail: spotifyError?.error_description || spotifyError?.error || err.message,
+        });
     }
 });
 

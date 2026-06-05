@@ -1,10 +1,10 @@
 // ============================================================
 // SpotifyCallback — handles Spotify OAuth redirect
-// Route: /spotify/callback?code=xxx&state=xxx
+// Route: /spotify/callback?code=xxx
 // Flow: reads code → POSTs to server → redirects back to app
 // ============================================================
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { spotifyAPI } from "../utils/api";
 
@@ -12,8 +12,12 @@ export default function SpotifyCallback() {
     const navigate = useNavigate();
     const [status, setStatus] = useState("Connecting to Spotify…");
     const [error, setError] = useState(null);
+    const exchanged = useRef(false); // prevent double-fire (React StrictMode)
 
     useEffect(() => {
+        if (exchanged.current) return; // already ran — skip
+        exchanged.current = true;
+
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
         const errorParam = params.get("error");
@@ -34,15 +38,15 @@ export default function SpotifyCallback() {
         spotifyAPI.exchangeCode(code)
             .then(() => {
                 setStatus("✅ Spotify connected!");
-                // Return to previous page or home, with success flag
                 const returnTo = sessionStorage.getItem("spotify_return_to") || "/";
                 sessionStorage.removeItem("spotify_return_to");
-                setTimeout(() => navigate(returnTo + "?spotify_connected=true"), 1000);
+                setTimeout(() => navigate(returnTo + "?spotify_connected=true"), 1200);
             })
             .catch((err) => {
-                const msg = err.response?.data?.error || "Failed to connect Spotify";
-                setError(msg);
-                setTimeout(() => navigate("/"), 3000);
+                const detail = err.response?.data?.detail || err.response?.data?.error || "Failed to connect Spotify";
+                console.error("SpotifyCallback error:", detail);
+                setError(detail);
+                setTimeout(() => navigate("/"), 3500);
             });
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -55,8 +59,8 @@ export default function SpotifyCallback() {
             {error ? (
                 <>
                     <h2 style={{ color: "#dc2626", marginBottom: "0.5rem" }}>Connection Failed</h2>
-                    <p className="muted">{error}</p>
-                    <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.85rem" }}>Redirecting you back…</p>
+                    <p className="muted" style={{ maxWidth: 400, margin: "0 auto" }}>{error}</p>
+                    <p className="muted" style={{ marginTop: "0.75rem", fontSize: "0.85rem" }}>Redirecting you back…</p>
                 </>
             ) : (
                 <>
