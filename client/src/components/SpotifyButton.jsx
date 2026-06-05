@@ -37,9 +37,12 @@ export default function SpotifyButton({ sessionId, fingerprint }) {
     }, []);
 
     const handleConnect = () => {
+        const token = localStorage.getItem("sentio_token");
+        if (!token) return setError("You must be logged in to connect Spotify");
         // Save current page so SpotifyCallback can return here
         sessionStorage.setItem("spotify_return_to", window.location.pathname);
-        window.location.href = spotifyAPI.getAuthUrl();
+        const authUrl = spotifyAPI.getAuthUrl(token);
+        window.location.href = authUrl;
     };
 
     const handleGenerate = async () => {

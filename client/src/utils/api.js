@@ -126,11 +126,13 @@ export const spotifyAPI = {
     generatePlaylist: (data) => api.post("/spotify/generate-playlist", data),
     disconnect: () => api.delete("/spotify/disconnect"),
     exchangeCode: (code) => api.post("/spotify/exchange-code", { code }),
-    getAuthUrl: () => {
+    // Browser redirect — token passed as query param since headers can't be set
+    getAuthUrl: (token) => {
         const base = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-        return `${base}/spotify/auth`;
+        return `${base}/spotify/auth?_token=${token}`;
     },
 };
+
 
 
 
