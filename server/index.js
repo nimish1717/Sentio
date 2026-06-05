@@ -16,6 +16,10 @@ dotenv.config();
 const app = express();
 const httpServer = http.createServer(app);
 
+// Trust Render/Vercel/Heroku proxy (needed for rate-limiter + IP detection)
+app.set("trust proxy", 1);
+
+
 // ── Socket.io initialisation ─────────────────────────────────
 const { initSocket } = require("./socket");
 initSocket(httpServer);
